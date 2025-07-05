@@ -1,19 +1,16 @@
 import { createContext, useEffect, useContext, useState } from "react";
-import { supabase } from '../supabaseClient';
+import { supabase } from "../supabaseClient";
 
 const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
-  const [session, setSession] = useState(undefined);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);  
 
   const signUpNewUser = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
-      console.error("There was a problem signing up: ", error);
+      console.error("There was a problem signing up:", error);
       return { success: false, error };
     }
     return { success: true, data };
@@ -25,9 +22,7 @@ export const AuthContextProvider = ({ children }) => {
         email,
         password,
       });
-      if (error) {
-        return { success: false, error };
-      }
+      if (error) return { success: false, error };
       return { success: true, data };
     } catch (error) {
       return { success: false, error };
@@ -43,22 +38,30 @@ export const AuthContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-    });
+      setLoading(false);
+    };
+
+    initAuth();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, signUpNewUser, signInUser, signOut }}>
+    <AuthContext.Provider value={{ session, loading, signUpNewUser, signInUser, signOut }}>
       {children}
     </AuthContext.Provider>
   );
+
+  
 };
 
 export const UserAuth = () => useContext(AuthContext);
