@@ -37,7 +37,7 @@ const Dashboard = () => {
   return (
     <div className="p-8">
       <h1 className="absolute bottom-[5%] right-[10%] font-bold animate-wiggle">Dashboard</h1>
-      <h2 className="text-xl mb-4">Welcome, {session?.user?.email}</h2>
+      <h2 className="text-xl mb-4">Welcome, to project {session?.user?.email}</h2>
       <button
         onClick={handleSignOut}
         className="hover:cursor-pointer border px-4 py-3 mt-4 rounded bg-red-500 text-white hover:bg-red-600 transition"
